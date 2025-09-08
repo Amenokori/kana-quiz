@@ -4,7 +4,6 @@ A quiz app for learning Japanese Kana (Hiragana and Katakana).
 
 <img width="1542" height="991" alt="frame_safari_light" src="https://github.com/user-attachments/assets/82636816-8862-464e-9266-4d329957421f" />
 
-
 ## ✨ Why Kana Quiz?
 
 Most kana apps are just flashcards. This one is different. It has a question engine that helps you learn faster by focusing on the tricky parts of Japanese.
