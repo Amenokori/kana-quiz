@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/japanese-congratulations-button.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kana Quiz helps you learn hiragana and katakana.</title>
+    <meta
+      name="description"
+      content="Learn Hiragana and Katakana the easy way! Kana Quiz offers simple, interactive exercises to help you master the Japanese alphabet."
+    />
+    <script>
+      // Prevent theme flash by applying theme immediately
+      (function () {
+        try {
+          const theme = localStorage.getItem('theme') || 'system';
+          let actualTheme;
+
+          if (theme === 'system') {
+            actualTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
+              ? 'dark'
+              : 'light';
+          } else {
+            actualTheme = theme;
+          }
+
+          document.documentElement.classList.add(actualTheme);
+          document.documentElement.setAttribute('data-theme', actualTheme);
+        } catch (e) {
+          // Fallback to light theme if anything fails
+          document.documentElement.classList.add('light');
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
