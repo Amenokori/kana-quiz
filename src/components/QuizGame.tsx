@@ -155,7 +155,7 @@ const QuizGame: React.FC<QuizGameProps> = ({ onGameStateChange }) => {
           <div className="min-h-screen rounded-none border-0 border-blue-100 bg-white p-6 pt-16 md:min-h-0 md:rounded-2xl md:border md:pt-6 md:shadow-2xl dark:border-slate-700 dark:bg-slate-800">
             <div className="mb-8 text-center">
               <h2 className="mb-2 text-2xl font-bold text-slate-900 dark:text-white">
-                Ready to Test Your Skills? 🎯
+                Ready to Test Your Kana Skills? 🎯
               </h2>
               <p className="text-slate-600 dark:text-slate-400">
                 Choose your settings and let's begin!

@@ -23,9 +23,6 @@ function App() {
         <footer className="border-t border-blue-100 bg-gradient-to-r from-blue-50 to-indigo-50 dark:border-gray-600 dark:from-gray-800 dark:to-gray-700">
           <div className="container mx-auto px-4 py-6">
             <div className="flex flex-col items-center gap-2 text-center">
-              <p className="text-sm text-gray-500 dark:text-gray-300">
-                This project is open source. Feel free to contribute or open issues.
-              </p>
               <a
                 href="https://github.com/Amenokori/kana-quiz"
                 target="_blank"
@@ -34,6 +31,12 @@ function App() {
                 <GitHub size={14} />
                 <span>View on GitHub</span>
               </a>
+
+              <p className="text-sm text-gray-500 dark:text-gray-300">
+                This project is open source, developed and maintained by Amenokori.
+                <br />
+                Feel free to contribute or open issues.
+              </p>
             </div>
           </div>
         </footer>

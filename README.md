@@ -20,9 +20,8 @@ Most kana apps are just flashcards. This one is different. It has a question eng
 
 - **📈 Step-by-step learning**: Questions are grouped by difficulty: `Beginner`, `Intermediate`, and `Advanced`. This lets you learn the basics first before moving on to harder kana.
 
-- **🎨 Quiz settings**:
+- **🎨 Other features**:
   - Choose your quiz length (25, 50, 75, or 100 questions).
-  - A timed mode to answer questions in a set amount of time.
   - Get instant feedback on your answers.
   - Works on any device, switch between dark and light themes.
 
