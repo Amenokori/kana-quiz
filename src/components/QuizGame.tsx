@@ -214,9 +214,9 @@ const QuizGame: React.FC<QuizGameProps> = ({ onGameStateChange }) => {
 
   if (!quizState.isGameStarted) {
     return (
-      <div className="flex items-center justify-center px-4 py-8">
+      <div className="flex min-h-screen items-center justify-center px-4 py-8 md:min-h-0 md:px-4 md:py-8">
         <div className="w-full max-w-lg">
-          <div className="rounded-2xl border border-blue-100 bg-white p-6 shadow-2xl dark:border-slate-700 dark:bg-slate-800">
+          <div className="min-h-screen rounded-none border-0 border-blue-100 bg-white p-6 pt-16 md:min-h-0 md:rounded-2xl md:border md:pt-6 md:shadow-2xl dark:border-slate-700 dark:bg-slate-800">
             <div className="mb-8 text-center">
               <h2 className="mb-2 text-2xl font-bold text-slate-900 dark:text-white">
                 Ready to Test Your Skills? 🎯
@@ -332,9 +332,9 @@ const QuizGame: React.FC<QuizGameProps> = ({ onGameStateChange }) => {
     const percentage = Math.round((quizState.score / quizState.questions.length) * 100);
 
     return (
-      <div className="flex min-h-[calc(100vh-120px)] items-center justify-center px-4 py-8">
+      <div className="flex min-h-screen items-center justify-center px-4 py-8 md:min-h-[calc(100vh-120px)] md:px-4 md:py-8">
         <div className="w-full max-w-lg">
-          <div className="rounded-2xl border border-blue-100 bg-white p-6 text-center shadow-2xl dark:border-slate-700 dark:bg-slate-800">
+          <div className="min-h-screen rounded-none border-0 border-blue-100 bg-white p-6 pt-16 text-center md:min-h-0 md:rounded-2xl md:border md:pt-6 md:shadow-2xl dark:border-slate-700 dark:bg-slate-800">
             <div className="mb-6">
               <div className="mb-4 text-6xl">
                 {quizState.gameEndedByTime
@@ -408,10 +408,10 @@ const QuizGame: React.FC<QuizGameProps> = ({ onGameStateChange }) => {
   const currentQuestion = quizState.questions[quizState.currentQuestionIndex];
 
   return (
-    <div className="flex items-center justify-center px-4 py-8">
+    <div className="flex min-h-screen items-center justify-center px-4 py-8 md:min-h-0 md:px-4 md:py-8">
       <div className="w-full max-w-2xl">
-        <div className="rounded-2xl border border-blue-100 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-800">
-          <div className="flex items-center justify-between rounded-t-2xl bg-blue-100 p-3 text-sm font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+        <div className="min-h-screen rounded-none border-0 border-blue-100 bg-white md:min-h-0 md:rounded-2xl md:border md:shadow-2xl dark:border-slate-700 dark:bg-slate-800">
+          <div className="mt-16 flex items-center justify-between rounded-none bg-blue-100 p-3 text-sm font-medium text-slate-600 md:mt-0 md:rounded-t-2xl dark:bg-slate-800 dark:text-slate-400">
             <span>
               Question {quizState.currentQuestionIndex + 1}/{quizState.questions.length}
             </span>
