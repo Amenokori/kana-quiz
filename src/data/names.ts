@@ -1,4 +1,4 @@
-export const challengingJapaneseNames = [
+export const japaneseNames = [
   // --- Challenging Japanese Surnames (姓) ---
 
   // Group 1: Similar sounds and structure
