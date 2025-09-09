@@ -1,13 +1,12 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { generateQuiz, generateQuizByDifficulty, type QuizQuestion } from '../utils/engine';
+import ConfirmDialog from './ConfirmDialog';
 
 type Difficulty = 'beginner' | 'intermediate' | 'advanced' | 'mixed';
 
 interface QuizConfig {
   difficulty: Difficulty;
   questionCount: 25 | 50 | 75 | 100;
-  timeMode: boolean;
-  timeLimit: number; // in seconds
 }
 
 interface QuizState {
@@ -19,8 +18,7 @@ interface QuizState {
   isGameCompleted: boolean;
   selectedAnswer: string | null;
   showResult: boolean;
-  timeRemaining: number;
-  gameEndedByTime: boolean;
+  showEndGameConfirmation: boolean;
 }
 
 interface QuizGameProps {
@@ -31,8 +29,6 @@ const QuizGame: React.FC<QuizGameProps> = ({ onGameStateChange }) => {
   const [config, setConfig] = useState<QuizConfig>({
     difficulty: 'mixed',
     questionCount: 25,
-    timeMode: false,
-    timeLimit: 10,
   });
 
   const [quizState, setQuizState] = useState<QuizState>({
@@ -44,73 +40,13 @@ const QuizGame: React.FC<QuizGameProps> = ({ onGameStateChange }) => {
     isGameCompleted: false,
     selectedAnswer: null,
     showResult: false,
-    timeRemaining: 0,
-    gameEndedByTime: false,
+    showEndGameConfirmation: false,
   });
-
-  const timerRef = useRef<number | null>(null);
 
   // Notify parent component when game state changes
   useEffect(() => {
     onGameStateChange(quizState.isGameStarted && !quizState.isGameCompleted);
   }, [quizState.isGameStarted, quizState.isGameCompleted, onGameStateChange]);
-
-  // Timer effect for time mode
-  useEffect(() => {
-    // Clear any existing timer first
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-
-    if (
-      config.timeMode &&
-      quizState.isGameStarted &&
-      !quizState.isGameCompleted &&
-      !quizState.showResult &&
-      quizState.timeRemaining > 0
-    ) {
-      timerRef.current = window.setInterval(() => {
-        setQuizState(prev => {
-          if (prev.timeRemaining <= 1) {
-            // Time's up - end the game
-            return {
-              ...prev,
-              timeRemaining: 0,
-              isGameCompleted: true,
-              gameEndedByTime: true,
-            };
-          }
-          return {
-            ...prev,
-            timeRemaining: prev.timeRemaining - 1,
-          };
-        });
-      }, 1000);
-    }
-
-    return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
-    };
-  }, [
-    config.timeMode,
-    quizState.isGameStarted,
-    quizState.isGameCompleted,
-    quizState.showResult,
-    quizState.timeRemaining,
-  ]);
-
-  // Cleanup timer on component unmount
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-    };
-  }, []);
 
   const startQuiz = () => {
     const questions =
@@ -127,8 +63,7 @@ const QuizGame: React.FC<QuizGameProps> = ({ onGameStateChange }) => {
       isGameCompleted: false,
       selectedAnswer: null,
       showResult: false,
-      timeRemaining: config.timeMode ? config.timeLimit : 0,
-      gameEndedByTime: false,
+      showEndGameConfirmation: false,
     });
   };
 
@@ -154,11 +89,6 @@ const QuizGame: React.FC<QuizGameProps> = ({ onGameStateChange }) => {
       userAnswers: newUserAnswers,
       showResult: true,
     }));
-
-    // Auto-advance after showing result
-    setTimeout(() => {
-      nextQuestion();
-    }, 1000);
   };
 
   const nextQuestion = () => {
@@ -169,7 +99,6 @@ const QuizGame: React.FC<QuizGameProps> = ({ onGameStateChange }) => {
         ...prev,
         isGameCompleted: true,
         showResult: false,
-        timeRemaining: 0,
       }));
     } else {
       setQuizState(prev => ({
@@ -177,15 +106,12 @@ const QuizGame: React.FC<QuizGameProps> = ({ onGameStateChange }) => {
         currentQuestionIndex: nextIndex,
         selectedAnswer: null,
         showResult: false,
-        timeRemaining: config.timeMode ? config.timeLimit : 0,
+        showEndGameConfirmation: false,
       }));
     }
   };
 
   const restartGame = () => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-    }
     setQuizState({
       questions: [],
       currentQuestionIndex: 0,
@@ -195,20 +121,30 @@ const QuizGame: React.FC<QuizGameProps> = ({ onGameStateChange }) => {
       isGameCompleted: false,
       selectedAnswer: null,
       showResult: false,
-      timeRemaining: 0,
-      gameEndedByTime: false,
+      showEndGameConfirmation: false,
     });
   };
 
   const endGame = () => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-    }
     setQuizState(prev => ({
       ...prev,
       isGameCompleted: true,
       showResult: false,
-      timeRemaining: 0,
+      showEndGameConfirmation: false,
+    }));
+  };
+
+  const showEndGameConfirmation = () => {
+    setQuizState(prev => ({
+      ...prev,
+      showEndGameConfirmation: true,
+    }));
+  };
+
+  const hideEndGameConfirmation = () => {
+    setQuizState(prev => ({
+      ...prev,
+      showEndGameConfirmation: false,
     }));
   };
 
@@ -274,48 +210,6 @@ const QuizGame: React.FC<QuizGameProps> = ({ onGameStateChange }) => {
               </div>
             </div>
 
-            <div className="mb-6">
-              <label className="mb-3 block text-sm font-semibold text-slate-700 dark:text-slate-300">
-                Time Mode
-              </label>
-              <div className="mb-4">
-                <button
-                  onClick={() => setConfig(prev => ({ ...prev, timeMode: !prev.timeMode }))}
-                  className={`w-full rounded-xl p-3 text-sm font-semibold transition-all duration-200 ${
-                    config.timeMode
-                      ? 'bg-orange-500 text-white shadow-lg dark:bg-orange-500'
-                      : 'border border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100 dark:border-slate-600 dark:bg-slate-700 dark:text-orange-300 dark:hover:bg-slate-600'
-                  }`}
-                >
-                  <div className="mb-1 text-base">{config.timeMode ? '⏰' : '🐌'}</div>
-                  {config.timeMode ? 'Time Mode: ON' : 'Time Mode: OFF'}
-                </button>
-              </div>
-
-              {config.timeMode && (
-                <div>
-                  <label className="mb-2 block text-xs font-medium text-slate-600 dark:text-slate-400">
-                    Time per question: {config.timeLimit}s
-                  </label>
-                  <div className="grid grid-cols-5 gap-1">
-                    {([5, 10, 15, 20, 30] as const).map(seconds => (
-                      <button
-                        key={seconds}
-                        onClick={() => setConfig(prev => ({ ...prev, timeLimit: seconds }))}
-                        className={`rounded-lg p-2 text-xs font-semibold transition-all duration-200 ${
-                          config.timeLimit === seconds
-                            ? 'bg-orange-400 text-white shadow-md dark:bg-orange-400'
-                            : 'border border-orange-200 bg-orange-50 text-orange-600 hover:bg-orange-100 dark:border-slate-600 dark:bg-slate-700 dark:text-orange-300 dark:hover:bg-slate-600'
-                        }`}
-                      >
-                        {seconds}s
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
             <button
               onClick={startQuiz}
               className="w-full rounded-xl bg-blue-600 px-6 py-4 text-lg font-bold text-white shadow-xl transition-all duration-200 hover:scale-105 hover:bg-blue-700 hover:shadow-2xl active:scale-95 dark:bg-blue-500 dark:hover:bg-blue-600"
@@ -337,20 +231,18 @@ const QuizGame: React.FC<QuizGameProps> = ({ onGameStateChange }) => {
           <div className="min-h-screen rounded-none border-0 border-blue-100 bg-white p-6 pt-16 text-center md:min-h-0 md:rounded-2xl md:border md:pt-6 md:shadow-2xl dark:border-slate-700 dark:bg-slate-800">
             <div className="mb-6">
               <div className="mb-4 text-6xl">
-                {quizState.gameEndedByTime
-                  ? '⏰'
-                  : percentage >= 90
-                    ? '🏆'
-                    : percentage >= 80
-                      ? '🎉'
-                      : percentage >= 70
-                        ? '👍'
-                        : percentage >= 60
-                          ? '😊'
-                          : '📚'}
+                {percentage >= 90
+                  ? '🏆'
+                  : percentage >= 80
+                    ? '🎉'
+                    : percentage >= 70
+                      ? '👍'
+                      : percentage >= 60
+                        ? '😊'
+                        : '📚'}
               </div>
               <h2 className="mb-4 text-3xl font-bold text-slate-900 dark:text-white">
-                {quizState.gameEndedByTime ? "Time's Up!" : 'Quiz Complete!'}
+                Quiz Complete!
               </h2>
             </div>
 
@@ -377,17 +269,15 @@ const QuizGame: React.FC<QuizGameProps> = ({ onGameStateChange }) => {
 
             <div className="mb-8 rounded-xl bg-slate-50 p-4 dark:bg-slate-700">
               <p className="text-base text-slate-700 dark:text-slate-300">
-                {quizState.gameEndedByTime
-                  ? 'Time ran out! Keep practicing to improve your speed! ⚡'
-                  : percentage >= 90
-                    ? "Excellent work! You're a kana master! 🎉"
-                    : percentage >= 80
-                      ? 'Great job! Keep practicing! 👏'
-                      : percentage >= 70
-                        ? "Good effort! You're improving! 💪"
-                        : percentage >= 60
-                          ? 'Not bad! More practice will help! 📚'
-                          : 'Keep studying! Practice makes perfect! 🌟'}
+                {percentage >= 90
+                  ? "Excellent work! You're a kana master! 🎉"
+                  : percentage >= 80
+                    ? 'Great job! Keep practicing! 👏'
+                    : percentage >= 70
+                      ? "Good effort! You're improving! 💪"
+                      : percentage >= 60
+                        ? 'Not bad! More practice will help! 📚'
+                        : 'Keep studying! Practice makes perfect! 🌟'}
               </p>
             </div>
 
@@ -415,47 +305,38 @@ const QuizGame: React.FC<QuizGameProps> = ({ onGameStateChange }) => {
             <span>
               Question {quizState.currentQuestionIndex + 1}/{quizState.questions.length}
             </span>
-            <div className="flex items-center space-x-4">
-              {config.timeMode && !quizState.showResult && (
-                <span
-                  className={`font-bold ${quizState.timeRemaining <= 3 ? 'animate-pulse text-red-500' : 'text-orange-500'}`}
-                >
-                  ⏰ {quizState.timeRemaining}s
-                </span>
-              )}
-              <span>
-                Score: {quizState.score}/
-                {quizState.currentQuestionIndex + (quizState.showResult ? 1 : 0)}
-              </span>
-            </div>
+
+            {/* Result Feedback in Top Bar */}
+            {quizState.showResult && (
+              <div
+                className={`flex items-center rounded-full px-4 text-sm font-bold ${
+                  quizState.selectedAnswer === currentQuestion.correctAnswer
+                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+                    : 'bg-red-100 text-red-700 dark:bg-red-600/30 dark:text-red-300'
+                }`}
+              >
+                {quizState.selectedAnswer === currentQuestion.correctAnswer ? (
+                  <>
+                    <span className="mr-2 text-xs">🎉</span>
+                    Correct!
+                  </>
+                ) : (
+                  <>
+                    <span className="mr-2 text-xs">💭</span>
+                    Incorrect
+                  </>
+                )}
+              </div>
+            )}
+
+            <span>
+              Score: {quizState.score}/
+              {quizState.currentQuestionIndex + (quizState.showResult ? 1 : 0)}
+            </span>
           </div>
           {/* Question Section - Emphasized */}
           <div className="border-b border-blue-100 bg-blue-50 p-8 dark:border-slate-600 dark:bg-slate-700">
-            {config.timeMode && !quizState.showResult && (
-              <div className="mb-4">
-                <div className="mb-2 flex items-center justify-between">
-                  <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
-                    Time Remaining
-                  </span>
-                  <span
-                    className={`text-sm font-bold ${quizState.timeRemaining <= 3 ? 'text-red-500' : 'text-orange-500'}`}
-                  >
-                    {quizState.timeRemaining}s
-                  </span>
-                </div>
-                <div className="h-2 w-full rounded-full bg-slate-200 dark:bg-slate-600">
-                  <div
-                    className={`h-2 rounded-full transition-all duration-1000 ease-linear ${
-                      quizState.timeRemaining <= 3 ? 'bg-red-500' : 'bg-orange-500'
-                    }`}
-                    style={{
-                      width: `${(quizState.timeRemaining / config.timeLimit) * 100}%`,
-                    }}
-                  />
-                </div>
-              </div>
-            )}
-            <h3 className="mb-2 text-2xl font-bold text-slate-900 dark:text-white">
+            <div className="mb-2 text-2xl font-bold text-slate-900 dark:text-white">
               {(() => {
                 const parts = currentQuestion.question.split(':');
                 if (parts.length === 2) {
@@ -468,7 +349,7 @@ const QuizGame: React.FC<QuizGameProps> = ({ onGameStateChange }) => {
                 }
                 return currentQuestion.question;
               })()}
-            </h3>
+            </div>
           </div>
 
           {/* Answer Options */}
@@ -477,9 +358,7 @@ const QuizGame: React.FC<QuizGameProps> = ({ onGameStateChange }) => {
               <button
                 key={index}
                 onClick={() => handleAnswerSelect(option)}
-                disabled={
-                  quizState.showResult || (config.timeMode && quizState.timeRemaining === 0)
-                }
+                disabled={quizState.showResult}
                 className={`w-full rounded-xl p-4 text-left font-semibold ${
                   quizState.showResult
                     ? option === currentQuestion.correctAnswer
@@ -487,11 +366,9 @@ const QuizGame: React.FC<QuizGameProps> = ({ onGameStateChange }) => {
                       : option === quizState.selectedAnswer
                         ? 'border-2 border-red-500 bg-red-50 text-red-700 shadow-lg dark:bg-red-900/20 dark:text-red-300'
                         : 'border border-slate-200 bg-slate-50 text-slate-400 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-500'
-                    : config.timeMode && quizState.timeRemaining === 0
-                      ? 'cursor-not-allowed border border-slate-200 bg-slate-50 text-slate-400 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-500'
-                      : quizState.selectedAnswer === option
-                        ? 'border-2 border-blue-300 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-50 hover:shadow-md dark:border-blue-600 dark:bg-slate-700 dark:text-slate-300 dark:hover:border-blue-500 dark:hover:bg-slate-600'
-                        : 'border-2 border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-50 hover:shadow-md dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300 dark:hover:border-blue-500 dark:hover:bg-slate-600'
+                    : quizState.selectedAnswer === option
+                      ? 'border-2 border-blue-300 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-50 hover:shadow-md dark:border-blue-600 dark:bg-slate-700 dark:text-slate-300 dark:hover:border-blue-500 dark:hover:bg-slate-600'
+                      : 'border-2 border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-50 hover:shadow-md dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300 dark:hover:border-blue-500 dark:hover:bg-slate-600'
                 }`}
               >
                 <div className="flex items-center justify-between">
@@ -512,65 +389,52 @@ const QuizGame: React.FC<QuizGameProps> = ({ onGameStateChange }) => {
             ))}
           </div>
 
-          {/* Result Feedback */}
-          {quizState.showResult && (
-            <div className="px-6 pb-4 text-center">
-              <div
-                className={`inline-flex items-center rounded-full px-6 py-3 text-lg font-bold ${
-                  quizState.selectedAnswer === currentQuestion.correctAnswer
-                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                    : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                }`}
-              >
-                {quizState.selectedAnswer === currentQuestion.correctAnswer ? (
-                  <>
-                    <span className="mr-2 text-2xl">🎉</span>
-                    Correct!
-                  </>
-                ) : (
-                  <>
-                    <span className="mr-2 text-2xl">💭</span>
-                    Incorrect
-                  </>
-                )}
-              </div>
-            </div>
-          )}
-
           {/* Action Buttons */}
           <div className="flex flex-col items-center space-y-4 p-6 pt-2">
             {!quizState.showResult ? (
-              <>
-                {config.timeMode && quizState.timeRemaining === 0 ? (
-                  <div className="w-full rounded-xl bg-red-100 p-4 text-center dark:bg-red-900/20">
-                    <p className="text-lg font-bold text-red-700 dark:text-red-400">
-                      ⏰ Time's Up! Game Over
-                    </p>
-                  </div>
-                ) : (
-                  <button
-                    onClick={submitAnswer}
-                    disabled={!quizState.selectedAnswer}
-                    className={`w-full rounded-xl px-8 py-4 text-lg font-bold transition-all duration-200 ${
-                      quizState.selectedAnswer
-                        ? 'bg-blue-600 text-white shadow-xl hover:scale-105 hover:bg-blue-700 hover:shadow-2xl active:scale-95 dark:bg-blue-500 dark:hover:bg-blue-600'
-                        : 'cursor-not-allowed border border-slate-200 bg-slate-100 text-slate-400 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-500'
-                    }`}
-                  >
-                    {quizState.selectedAnswer ? '✅ Submit Answer' : '👆 Select an answer'}
-                  </button>
-                )}
-              </>
-            ) : null}
+              <button
+                onClick={submitAnswer}
+                disabled={!quizState.selectedAnswer}
+                className={`w-full rounded-xl px-8 py-4 text-lg font-bold transition-all duration-200 ${
+                  quizState.selectedAnswer
+                    ? 'bg-blue-600 text-white shadow-xl hover:scale-105 hover:bg-blue-700 hover:shadow-2xl active:scale-95 dark:bg-blue-500 dark:hover:bg-blue-600'
+                    : 'cursor-not-allowed border border-slate-200 bg-slate-100 text-slate-400 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-500'
+                }`}
+              >
+                {quizState.selectedAnswer ? '✅ Submit Answer' : '👆 Select an answer'}
+              </button>
+            ) : (
+              <button
+                onClick={nextQuestion}
+                className="w-full rounded-xl bg-green-600 px-8 py-4 text-lg font-bold text-white shadow-xl transition-all duration-200 hover:scale-105 hover:bg-green-700 hover:shadow-2xl active:scale-95 dark:bg-green-500 dark:hover:bg-green-600"
+              >
+                {quizState.currentQuestionIndex + 1 >= quizState.questions.length
+                  ? '🏁 Finish Quiz'
+                  : '➡️ Next Question'}
+              </button>
+            )}
 
+            {/* End Game Button */}
             <button
-              onClick={endGame}
+              onClick={showEndGameConfirmation}
               className="text-sm font-medium text-red-500 transition-colors hover:text-red-600 active:scale-95 dark:text-red-400 dark:hover:text-red-300"
             >
-              🏃‍♂️ End Game Early
+              🏃‍♂️ End Quiz Early
             </button>
           </div>
         </div>
+
+        {/* End Game Confirmation Dialog */}
+        <ConfirmDialog
+          isOpen={quizState.showEndGameConfirmation}
+          title="End Quiz Early?"
+          message="Are you sure you want to end the quiz early? Your current progress will be saved and you'll see your final score."
+          confirmText="Yes, End Quiz"
+          cancelText="Continue Playing"
+          onConfirm={endGame}
+          onCancel={hideEndGameConfirmation}
+          confirmButtonVariant="danger"
+        />
       </div>
     </div>
   );
