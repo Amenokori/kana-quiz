@@ -16,7 +16,7 @@ Most kana apps are just flashcards. This one is different. It has a question eng
   - Learning combination sounds (like `きゃ` and `しょ`)
   - Reading real words written in Hiragana, Katakana, or a mix of both.
 
-- **🎯 Challenging questions**: The wrong answers aren't random. They are picked to look like the right answer, so you have to pay close attention to the details.
+- **🎯 Challenging questions**: The wrong answers are picked to look like the right answer, so you have to pay close attention to the details.
 
 - **📈 Step-by-step learning**: Questions are grouped by difficulty: `Beginner`, `Intermediate`, and `Advanced`. This lets you learn the basics first before moving on to harder kana.
 
@@ -24,8 +24,7 @@ Most kana apps are just flashcards. This one is different. It has a question eng
   - Choose your quiz length (25, 50, 75, or 100 questions).
   - A timed mode to answer questions in a set amount of time.
   - Get instant feedback on your answers.
-  - Switch between dark and light themes.
-  - Works on any device, so you can practice anywhere.
+  - Works on any device, switch between dark and light themes.
 
 ## 🚀 Getting Started
 
