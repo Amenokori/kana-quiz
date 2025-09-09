@@ -7,14 +7,14 @@ function App() {
   const [isGameActive, setIsGameActive] = useState(false);
 
   return (
-    <div className="min-h-screen bg-gray-50 transition-colors dark:bg-gray-900">
+    <div className="flex min-h-screen flex-col bg-gray-50 transition-colors dark:bg-gray-900">
       {/* Floating Theme Toggle */}
       <div className="fixed top-4 right-4 z-50">
         <ThemeToggle />
       </div>
 
       {/* Main content */}
-      <main className="container mx-auto px-0 py-0 md:px-4 md:py-8">
+      <main className="container mx-auto grow px-0 py-0 md:px-4 md:py-8">
         <QuizGame onGameStateChange={setIsGameActive} />
       </main>
 
