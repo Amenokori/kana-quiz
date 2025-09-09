@@ -1,7 +1,6 @@
+import { v4 as uuidv4 } from 'uuid';
+
 // Utility functions
-export function getRandomElement<T>(array: T[]): T {
-  return array[Math.floor(Math.random() * array.length)];
-}
 
 export function shuffleArray<T>(array: T[]): T[] {
   const shuffled = [...array];
@@ -10,6 +9,10 @@ export function shuffleArray<T>(array: T[]): T[] {
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
   return shuffled;
+}
+
+export function getRandomElement<T>(array: T[]): T {
+  return array[Math.floor(Math.random() * array.length)];
 }
 
 export function getRandomElements<T>(array: T[], count: number): T[] {
@@ -32,8 +35,6 @@ export function findSimilarKana(
 }
 
 // Utility function for better ID generation
-let questionCounter = 0;
 export function generateQuestionId(prefix: string): string {
-  questionCounter++;
-  return `${prefix}_${Date.now()}_${questionCounter}`;
+  return `${prefix}_${uuidv4()}`;
 }

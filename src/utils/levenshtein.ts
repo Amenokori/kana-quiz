@@ -1,11 +1,17 @@
+import { isRomaji, toRomaji } from 'wanakana';
 import { shuffleArray } from './helpers';
 
 // Levenshtein distance for string similarity
 export function levenshtein(a: string, b: string): number {
+  // Input validation
+  if (typeof a !== 'string' || typeof b !== 'string') {
+    throw new Error('Both arguments must be strings');
+  }
+
   if (a.length === 0) return b.length;
   if (b.length === 0) return a.length;
 
-  const matrix = [];
+  const matrix: number[][] = [];
 
   for (let i = 0; i <= b.length; i++) {
     matrix[i] = [i];
@@ -35,19 +41,31 @@ export function levenshtein(a: string, b: string): number {
 export function generateDistractors(
   correctAnswer: string,
   allOptions: string[],
-  count: number = 3,
+  count: number = 2,
   similarityFn?: (a: string, b: string) => number
 ): string[] {
   if (allOptions.length === 0) return [];
 
-  let distractors = allOptions.filter(option => option !== correctAnswer);
+  const distractors = allOptions.filter(option => option !== correctAnswer);
 
-  if (similarityFn) {
-    distractors.sort((a, b) => similarityFn(correctAnswer, b) - similarityFn(correctAnswer, a));
-  } else {
-    // Shuffle if no similarity function is provided to maintain randomness
-    distractors = shuffleArray(distractors);
+  // If we don't have enough distractors, return what we have
+  if (distractors.length <= count) {
+    return shuffleArray(distractors);
   }
+
+  // Check if correctAnswer is romaji, if not convert it
+  const comparisonAnswer = isRomaji(correctAnswer) ? correctAnswer : toRomaji(correctAnswer);
+
+  // Use levenshtein by default to find the most similar options
+  const similarity = similarityFn || levenshtein;
+
+  // Sort distractors by similarity, converting to romaji if needed for comparison
+  distractors.sort((a, b) => {
+    const aComparison = isRomaji(a) ? a : toRomaji(a);
+    const bComparison = isRomaji(b) ? b : toRomaji(b);
+
+    return similarity(comparisonAnswer, aComparison) - similarity(comparisonAnswer, bComparison);
+  });
 
   return distractors.slice(0, count);
 }
