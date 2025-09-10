@@ -2,6 +2,8 @@
 
 A quiz app for learning Japanese Kana (Hiragana and Katakana).
 
+https://kana-quiz.amenokori.com/
+
 <img width="1542" height="991" alt="frame_safari_light" src="https://github.com/user-attachments/assets/51880396-91e5-4b67-9fa7-e6c9f4a00acb" />
 
 ## ✨ Why Kana Quiz?
