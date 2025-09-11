@@ -68,23 +68,18 @@ const QuizGame: React.FC<QuizGameProps> = ({ onGameStateChange }) => {
   };
 
   const handleAnswerSelect = (answer: string) => {
+    // Don't allow selection if result is already shown
+    if (quizState.showResult) return;
+
+    const currentQuestion = quizState.questions[quizState.currentQuestionIndex];
+    const isCorrect = answer === currentQuestion.correctAnswer;
+
+    const newUserAnswers = [...quizState.userAnswers];
+    newUserAnswers[quizState.currentQuestionIndex] = answer;
+
     setQuizState(prev => ({
       ...prev,
       selectedAnswer: answer,
-    }));
-  };
-
-  const submitAnswer = () => {
-    if (!quizState.selectedAnswer) return;
-
-    const currentQuestion = quizState.questions[quizState.currentQuestionIndex];
-    const isCorrect = quizState.selectedAnswer === currentQuestion.correctAnswer;
-
-    const newUserAnswers = [...quizState.userAnswers];
-    newUserAnswers[quizState.currentQuestionIndex] = quizState.selectedAnswer;
-
-    setQuizState(prev => ({
-      ...prev,
       score: isCorrect ? prev.score + 1 : prev.score,
       userAnswers: newUserAnswers,
       showResult: true,
@@ -301,20 +296,22 @@ const QuizGame: React.FC<QuizGameProps> = ({ onGameStateChange }) => {
     <div className="flex items-center justify-center px-4 py-8 md:min-h-0 md:px-4 md:py-8">
       <div className="w-full max-w-2xl">
         <div className="rounded-none border-0 border-blue-100 bg-white md:min-h-0 md:rounded-2xl md:border md:shadow-2xl dark:border-slate-700 dark:bg-slate-800">
-          <div className="mt-16 flex items-center justify-between rounded-none bg-blue-100 p-3 text-sm font-medium text-slate-600 md:mt-0 md:rounded-t-2xl dark:bg-slate-800 dark:text-slate-400">
+          <div
+            className={`mt-16 flex items-center justify-between rounded-none p-3 text-sm font-medium md:mt-0 md:rounded-t-2xl ${
+              quizState.showResult
+                ? quizState.selectedAnswer === currentQuestion.correctAnswer
+                  ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200'
+                  : 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-200'
+                : 'bg-blue-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
+            }`}
+          >
             <span>
               Question {quizState.currentQuestionIndex + 1}/{quizState.questions.length}
             </span>
 
             {/* Result Feedback in Top Bar */}
             {quizState.showResult && (
-              <div
-                className={`flex items-center rounded-full px-4 text-sm font-bold ${
-                  quizState.selectedAnswer === currentQuestion.correctAnswer
-                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
-                    : 'bg-red-100 text-red-700 dark:bg-red-600/30 dark:text-red-300'
-                }`}
-              >
+              <div className="flex items-center text-sm font-bold">
                 {quizState.selectedAnswer === currentQuestion.correctAnswer ? (
                   <>
                     <span className="mr-2 text-xs">🎉</span>
@@ -392,21 +389,15 @@ const QuizGame: React.FC<QuizGameProps> = ({ onGameStateChange }) => {
           {/* Action Buttons */}
           <div className="flex flex-col items-center space-y-4 p-6 pt-2">
             {!quizState.showResult ? (
-              <button
-                onClick={submitAnswer}
-                disabled={!quizState.selectedAnswer}
-                className={`w-full rounded-xl px-8 py-4 text-lg font-bold transition-all duration-200 ${
-                  quizState.selectedAnswer
-                    ? 'bg-blue-600 text-white shadow-xl hover:scale-105 hover:bg-blue-700 hover:shadow-2xl active:scale-95 dark:bg-blue-500 dark:hover:bg-blue-600'
-                    : 'cursor-not-allowed border border-slate-200 bg-slate-100 text-slate-400 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-500'
-                }`}
-              >
-                {quizState.selectedAnswer ? '✅ Submit Answer' : '👆 Select an answer'}
-              </button>
+              <div className="w-full text-center">
+                <p className="px-6 py-3 text-base font-medium text-slate-600 dark:text-slate-400">
+                  👆 Select your answer above
+                </p>
+              </div>
             ) : (
               <button
                 onClick={nextQuestion}
-                className="w-full rounded-xl bg-green-600 px-8 py-4 text-lg font-bold text-white shadow-xl transition-all duration-200 hover:scale-105 hover:bg-green-700 hover:shadow-2xl active:scale-95 dark:bg-green-500 dark:hover:bg-green-600"
+                className="w-full rounded-xl bg-slate-600 px-6 py-3 text-base font-medium text-white transition-all duration-200 hover:bg-slate-700 dark:bg-slate-600 dark:hover:bg-slate-500"
               >
                 {quizState.currentQuestionIndex + 1 >= quizState.questions.length
                   ? '🏁 Finish Quiz'
@@ -417,7 +408,7 @@ const QuizGame: React.FC<QuizGameProps> = ({ onGameStateChange }) => {
             {/* End Game Button */}
             <button
               onClick={showEndGameConfirmation}
-              className="text-sm font-medium text-red-500 transition-colors hover:text-red-600 active:scale-95 dark:text-red-400 dark:hover:text-red-300"
+              className="mt-3 text-xs font-medium text-red-500 transition-colors hover:text-red-600 active:scale-95 dark:text-red-400 dark:hover:text-red-300"
             >
               🏃‍♂️ End Quiz Early
             </button>
