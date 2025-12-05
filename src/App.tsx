@@ -33,9 +33,14 @@ function App() {
               </a>
 
               <p className="text-sm text-gray-500 dark:text-gray-300">
-                This project is open source, developed and maintained by Amenokori.
-                <br />
-                Feel free to contribute or open issues.
+                This project is open source, developed and maintained by{' '}
+                <a
+                  className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                  href="https://amenokori.com/"
+                >
+                  Amenokori
+                </a>
+                .
               </p>
             </div>
           </div>
